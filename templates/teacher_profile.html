@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title></title>
-</head>
-<body>
-    <a href="{{ url_for('upload_video', username=username) }}">Tạo video mới</a>
-    {% for course in courses %}
-        <h3>{{ course.title }}</h3>
-        <p>Video URL: {{ course.video_url }}</p>
-        <!-- Embed the video using an iframe to display play and stop controls -->
-        <iframe width="320" height="240" src="{{ course.video_url }}" frameborder="0" allowfullscreen></iframe>
-        <p>Tags: {{ course.tag }}</p>
-        <!-- Các thẻ tag sẽ được hiển thị dưới dạng danh sách -->
-        <ul>
-            {% for tag in course.tag.split(',') %}
-                <li>{{ tag }}</li>
-            {% endfor %}
-        </ul>
-    {% endfor %}
+    <head>
+        <title>Teacher Profile</title>
+    </head>
+    <body>
+        <a href="{{ url_for('upload_video', username=username) }}">Tạo video mới</a>
+        <button type="button"><a href="{{ url_for('logout') }}"">Logout 1</a></button> 
+        <button type="button"><a href="/logout"">Logout 2</a></button> 
+        <!--ông thích dùng logout nào cũng được nhưng logout 2 sẽ hoạt động nhanh hơn 1-->
+        {% for course in courses %}
+            <h3>{{ course.title }}</h3>
+            <video width="320" height="240" controls>
+                <source src="{{ course.video_url }}" type="video/mp4">
+                <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
+                Your browser does not support the video tag.
+            </video>
+            <div>
+                <p>Tags: {{ course.tag }}</p>
+                {% if course.playlist is none %}
+                    <p>Playlist: Không gắn playlist</p>
+                {% else %}
+                    <p>Playlist: {{ course.playlist }}</p>
+                {% endif %}                
+                
+<!-- có thể khi Playlist là none thì không hiện gì, chỉ cho có playlist thì hiện tên playlist lên thôi cũng đc tùy ông chỉnh thôi :> -->
 
-</body>
+                <p>decribtion:
+                    {{course.description}}
+                </p>
+            </div>
+            
+        {% endfor %}
+    </body>
 </html>
 
 

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>Chào mừng {{ username }} đến với trang cá nhân!</h1>
+    <a href="{{ url_for('select_tags', username=username) }}">Thay đổi thẻ</a>
+
+    <h2>Các thẻ tag đã chọn:</h2>
+    <ul>
+        {% for tag in tags %}
+            <li>{{ tag }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if playlists %}
+        {% set tags_with_videos = [] %}
+        {% for playlist in playlists %}
+            {% if playlist.tag not in tags_with_videos %}
+                {% set tags_with_videos = tags_with_videos + [playlist.tag] %}
+                <h2>{{ playlist.tag }}</h2>
+            {% endif %}
+
+            <h3>{{ playlist.name }}</h3>
+            {% if playlist.thumbnail %}
+                <video width="320" height="240" controls>
+                    <source src="{{ playlist.thumbnail }}" type="video/mp4">
+                    <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
+                    Your browser does not support the video tag.
+                </video>
+            {% else %}
+                <!-- Show a placeholder image if there are no videos in the playlist -->
+                <img src="{{ url_for('static', filename='placeholder_thumbnail.jpg') }}" alt="Thumbnail Placeholder">
+            {% endif %}
+            <a href="{{ url_for('playlist_details', playlist_id=playlist.id) }}">View Playlist</a>
+        {% endfor %}
+    {% else %}
+        <p>Không tìm thấy video nào cho các thẻ tag đã chọn.</p>
+    {% endif %}
+</body>
+</html>
+
+<!--
+{% if teacher_playlists %}
+                    <h2>Teacher's Playlists:</h2>
+                    <ul>
+                        {% for playlist in teacher_playlists %}
+                            <li>
+                                <a href="{{ url_for('playlist_page', playlist_id=playlist.id) }}">{{ playlist.name }}</a>
+                                ({{ playlist.courses|length }} videos)
+                                <ul>
+                                    {% for course in playlist.courses %}
+                                        <li>
+                                            {{ course.title }} ({{ course.teacher_name }})
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No playlists found for this teacher.</p>
+                {% endif %}
+                
+                <ul>
+                    {% for v in videos_by_tags if v.tag == video.tag %}
+                        <li>
+                            <video width="320" height="240" controls>
+                                <source src="{{ v.video_url }}" type="video/mp4">-->
+                                <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
+<!--                                Your browser does not support the video tag.
+                            </video>
+                            <p>{{ v.title }} - {{ v.teacher_name }} - {{v.playlist}}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+-->
+
+
+<!--
+    <body>
+    <h1>Welcome, {{ username }}!</h1>
+    
+    {% if tags %}
+        <h2>Your Selected Tags:</h2>
+        <ul>
+            {% for tag in tags %}
+                <li>{{ tag }}</li>
+            {% endfor %}
+        </ul>
+
+        {% if videos_by_tags %}
+            <h2>Videos by Tags:</h2>
+            {% for tag in tags %}
+                <h3>{{ tag }}</h3>
+                <ul>
+                    {% for video in videos_by_tags %}
+                        {% if video.tag == tag %}
+                            <li>
+                                <a href="{{ video.video_url }}">{{ video.title }}</a> - {{ video.teacher_id }}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        {% else %}
+            <p>No videos found for your selected tags.</p>
+        {% endif %}
+    {% else %}
+        <p>You haven't selected any tags yet. Please select tags <a href="{{ url_for('select_tags', username=username) }}">here</a>.</p>
+    {% endif %}
+</body>
+-->

@@ -5,21 +5,79 @@
 </head>
 <body>
     <a href="{{ url_for('teacher_profile', username=username) }}">Trở về trang chính</a>
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
         <label for="title">Video Title:</label>
         <input type="text" id="title" name="title" required>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" rows="4" cols="50" required></textarea><br>
 
         <label for="video">Select Video:</label>
         <input type="file" id="video" name="video" accept=".mp4,.avi,.mov" required>
 
-        <label for="tag">Select Tags:</label> <!-- Use 'tag' as the name attribute -->
-        <select id="tag" name="tag" multiple> <!-- Use 'tag' as the name attribute -->
+        <label for="tag">Select Tags:</label>
+        <select id="tag" name="tag">
+            <option disabled="disabled" selected="selected">Thẻ Tag</option>
             {% for tag in tags %}
                 <option value="{{ tag }}">{{ tag }}</option>
             {% endfor %}
         </select>
+        
+        <label for="playlist">Video Playlist:</label>
+        <select id="playlist" name="playlist">
+            <option value="">Không có playlist</option> <!-- Chọn không có playlist -->
+            {% for playlist in teacher_playlists %}
+                <option value="{{ playlist.name }}">Playlist {{ playlist.name }}</option>
+            {% endfor %}
+            <option value="new">Tạo mới</option> <!-- Tạo playlist mới -->
+        </select>
+
+        <!-- Hiển thị trường nhập tên playlist mới nếu giáo viên chọn "Tạo mới" -->
+        <div id="newPlaylistDiv" style="display: none;">
+            <label for="newPlaylist">Tên Playlist Mới:</label>
+            <input type="text" id="newPlaylist" name="newPlaylist">
+        </div>
 
         <button type="submit">Upload Video</button>
     </form>
+
+    <script>
+        var playlistElement = document.getElementById('playlist');
+        var newPlaylistDiv = document.getElementById('newPlaylistDiv');
+        playlistElement.addEventListener('change', function() {
+            var selectedPlaylist = playlistElement.value;
+
+            if (selectedPlaylist === 'new') {
+                // Nếu giáo viên chọn "Tạo mới", hiển thị trường nhập tên playlist mới
+                newPlaylistDiv.style.display = 'block';
+            } else {
+                // Nếu giáo viên chọn playlist có sẵn hoặc "Không có playlist", ẩn trường nhập tên playlist mới
+                newPlaylistDiv.style.display = 'none';
+            }
+        });
+        
+        // Kiểm tra trạng thái ban đầu của dropdown và ẩn/trưng trường nhập tên playlist mới nếu cần
+        if (playlistElement.selectedIndex === 0) {
+            newPlaylistDiv.style.display = 'none';
+        } else {
+            newPlaylistDiv.style.display = 'block';
+        }
+
+        function validateForm() {
+            var tagElement = document.getElementById('tag');
+            var selectedTag = tagElement.value;
+            
+            if (selectedTag === 'Thẻ Tag' || selectedTag === '') {
+                alert('Hãy chọn thẻ tag!');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
 </body>
 </html>
+
+<!--
+
+-->

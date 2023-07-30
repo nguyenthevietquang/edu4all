@@ -12,14 +12,48 @@
             <li>{{ tag }}</li>
         {% endfor %}
     </ul>
-    <h2>Nội dung liên quan:</h2>
-    <ul>
-        {% for content in related_content %}
-        <li>
-            <h3>{{ content.title }}</h3>
-            <p>{{ content.body }}</p>
-        </li>
-        {% endfor %}
-    </ul>
+
+    {% if teacher_playlists %}
+        <h2>Teacher's Playlists:</h2>
+        <ul>
+            {% for playlist in teacher_playlists %}
+                <h3>{{ playlist.name }}</h3>  {# Hiển thị tên của playlist #}
+
+                {% set first_video_url = playlist.playlist_videos[0] if playlist.playlist_videos else None %}  {# Lấy video đầu tiên của playlist, nếu có #}
+                {% if first_video_url %}
+                    <video width="320" height="240" controls>
+                        <source src="{{ first_video_url }}" type="video/mp4">
+                        <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
+                        Your browser does not support the video tag.
+                    </video>
+                {% else %}
+                    <!-- Show a placeholder image if there are no videos in the playlist -->
+                    <img src="{{ url_for('static', filename='placeholder_thumbnail.jpg') }}" alt="Thumbnail Placeholder">
+                {% endif %}
+
+                <p>{{ playlist.num_videos }} videos</p>  {# Hiển thị số lượng video trong playlist #}
+                <p>Tags: {% for tag in playlist.tags %} {{ tag }}, {% endfor %}</p>  {# Hiển thị các tags của playlist #}
+                <a href="{{ url_for('playlist_page', playlist_id=playlist.id) }}">View Playlist</a>  {# Tạo đường dẫn đến trang playlist_page với playlist_id #}
+                <hr>
+
+                <!--ul>
+                    {% for video_url in playlist.playlist_videos %}
+                        <li>
+                            <video width="320" height="240" controls>
+                                <source src="{{ video_url }}" type="video/mp4"-->
+                                <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
+                             <!--   Your browser does not support the video tag.
+                            </video>
+                        </li>
+                    {% endfor %}
+                </ul-->
+
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No playlists found for this teacher.</p>
+    {% endif %}
 </body>
 </html>
+
+
