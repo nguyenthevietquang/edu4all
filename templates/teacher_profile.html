@@ -4,7 +4,8 @@
         <title>Teacher Profile</title>
     </head>
     <body>
-        <a href="{{ url_for('upload_video', username=username) }}">Tạo video mới</a>
+        <a href="{{ url_for('upload_video', username=username) }}">Tạo video mới</a><br>
+        <a href="{{ url_for('change_password', username=username, role='giaovien') }}">Change Password</a><br>
         <button type="button"><a href="{{ url_for('logout') }}"">Logout 1</a></button> 
         <button type="button"><a href="/logout"">Logout 2</a></button> 
         <!--ông thích dùng logout nào cũng được nhưng logout 2 sẽ hoạt động nhanh hơn 1-->
@@ -29,6 +30,10 @@
                     {{course.description}}
                 </p>
             </div>
+            <a href="{{ url_for('edit_video', username=username, course_id=course.id) }}">Edit</a>
+            <br>
+            <a href="{{ url_for('delete_video', username=username, course_id=course.id) }}">Delete</a>
+            <hr>
             
         {% endfor %}
     </body>

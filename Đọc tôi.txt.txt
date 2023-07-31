@@ -5,3 +5,11 @@ tui vừa bổ sung code của test.py
 uploadvideo.html
 teacher_profile.html
 và vài file khác liên quan đến playlist của học sinh (nhưng chưa hoàn thiện)
+
+-31/7/2023-
+tui bổ sung tính năng change password và html của nó
+tính năng delete video cho giáo viên
+tính năng chỉnh sửa thẻ tag, title, description của video cho giáo viên
+display phần playlist thì được rồi, còn phần xem cái playlist ấy là ok luôn
+
+

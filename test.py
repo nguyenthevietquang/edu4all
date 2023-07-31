@@ -38,6 +38,9 @@ class User(db.Model):
     def hash_password(self, password):
         # Hàm mã hóa mật khẩu sử dụng hashlib (SHA256)
         return hashlib.sha256(password.encode()).hexdigest()
+    def set_password(self, password):
+        # Hàm thiết lập mật khẩu mới và mã hóa nó
+        self.password = self.hash_password(password)
     def check_password(self, input_password):
         # Hàm kiểm tra mật khẩu
         return self.password == self.hash_password(input_password)
@@ -70,6 +73,7 @@ class Students(User):
 class Teachers(User):
     __bind_key__ = 'teachers'
     courses = db.relationship('Courses', backref='teacher', lazy=True)
+    #username = db.Column(db.String(80), unique=True, nullable=False)   #thêm sau
     playlists = db.relationship('Playlist', backref='teacher', lazy=True)
     
     
@@ -82,6 +86,7 @@ class Courses(db.Model):
     #video_filename = db.Column(db.String(200))  # Thêm thuộc tính mới để lưu tên tệp video đã tải lên
     tag = db.Column(db.String(100))
     playlist = db.Column(db.Text)
+    playlist_id = db.Column(db.Integer, db.ForeignKey('playlist.id'), nullable=True)
     teacher_id = db.Column(db.Integer, db.ForeignKey('teachers.id'), nullable=False)
     teacher_name = db.Column(db.String(80), nullable=False)
     
@@ -94,18 +99,35 @@ class Playlist(db.Model):
 
     
     
-def get_teacher_playlists():
+"""def get_teacher_playlists():
     teacher_playlists = []
-
+    
     for teacher in Teachers.query.all():
         playlists = Playlist.query.filter_by(teacher_id=teacher.id).all()
+        
         for playlist in playlists:
+            playlist_tags = {}  # Dictionary to hold tags for each playlist's videos
             video_urls = []
-            tags = []
-            for course in Courses.query.filter_by(teacher_id=teacher.id, playlist=playlist.id).all():
-                video_urls.append(course.video_url)
-                tags.append(course.tag)
-
+            
+            for course in Courses.query.filter(
+                Courses.teacher_id == teacher.id,
+                (Courses.playlist_id == playlist.id) | (Courses.playlist_id == None)
+            ).all():
+                if course.playlist_id is None:
+                    pass
+                else:
+                    video_urls.append(course.video_url)
+                    # Store tags in the playlist_tags dictionary for each video
+                    for tag in course.tag.split(','):  # Assuming tags are comma-separated
+                        playlist_tags[tag.strip()] = playlist_tags.get(tag.strip(), 0) + 1
+            
+            # Check if all videos in the playlist have the same tags
+            unique_tags = [tag for tag, count in playlist_tags.items() if count == len(video_urls)]
+            if unique_tags:
+                tags = unique_tags
+            else:
+                tags = list(playlist_tags.keys())
+            
             teacher_playlist = {
                 'id': playlist.id,
                 'teacher_id': teacher.id,
@@ -116,8 +138,67 @@ def get_teacher_playlists():
             }
             teacher_playlists.append(teacher_playlist)
 
+    return teacher_playlists"""
+
+def get_teacher_playlists():
+    teacher_playlists = []
+    
+    for teacher in Teachers.query.all():
+        playlists = Playlist.query.filter_by(teacher_id=teacher.id).all()
+        print(playlists)
+        
+        for playlist in playlists:
+            playlist_videos_by_tag = {}  # Dictionary to hold videos by tag
+            video_urls = []
+            
+            for course in Courses.query.filter(
+                Courses.teacher_id == teacher.id,
+                (Courses.playlist_id == playlist.id) | (Courses.playlist_id == None)
+            ).all():
+                if course.playlist_id is None:
+                    pass
+                else:
+                    video_urls.append(course.video_url)
+                    # Group videos by tag
+                    for tag in course.tag.split(','):  # Assuming tags are comma-separated
+                        tag = tag.strip()
+                        if tag not in playlist_videos_by_tag:
+                            playlist_videos_by_tag[tag] = []
+                        playlist_videos_by_tag[tag].append(course.video_url)
+            
+            for tag, videos in playlist_videos_by_tag.items():
+                # Create separate playlists for videos with different tags
+                new_playlist_name = f"{playlist.name} - {tag}"
+                new_playlist = {
+                    'id': playlist.id,
+                    'teacher_id': teacher.id,
+                    'name': new_playlist_name,
+                    'playlist_videos': videos,
+                    'tags': [tag],
+                    'num_videos': len(videos)
+                }
+                teacher_playlists.append(new_playlist)
+
+            # Add the original playlist (with common tags among all videos) to the teacher_playlists
+            unique_tags = [tag for tag, videos in playlist_videos_by_tag.items() if len(videos) == len(video_urls)]
+            if unique_tags:
+                tags = unique_tags
+            else:
+                tags = list(playlist_videos_by_tag.keys())
+            
+            original_playlist = {
+                'id': playlist.id,
+                'teacher_id': teacher.id,
+                'name': playlist.name,
+                'playlist_videos': video_urls,
+                'tags': tags,
+                'num_videos': len(video_urls)
+            }
+            teacher_playlists.append(original_playlist)
+
     return teacher_playlists
     
+
 def tag_list():
     try:
         with open('tags list.txt', encoding='utf-8') as tep:
@@ -261,6 +342,46 @@ def register():
 
     return render_template('register.html')
 
+@app.route('/change_password/<username>/role/<role>', methods=['GET', 'POST'])
+def change_password(username, role):
+
+
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+        role = request.form.get('role')
+        print("toi ",role)
+        if role == "hocvien":
+            user = Students.query.filter_by(username=username).first()
+            print("có hs")
+        elif role == "giaovien":
+            user = Teachers.query.filter_by(username=username).first()
+            print("có gv",user)
+            
+        if not user:
+            flash('User not found!', 'danger')
+            print("nguy hiểm")
+            return redirect(url_for('home'))
+
+        if new_password != confirm_password:
+            flash('Password confirmation does not match!', 'danger')
+            return render_template('change_password.html', username=username, role=role)
+
+        # Cập nhật password mới và lưu vào cơ sở dữ liệu 
+        #user.password = User().hash_password(new_password)
+        #user.password = True
+        #db.session.commit()
+        
+        user.set_password(new_password)  # Set and hash the new password
+        db.session.commit()
+        #with app.app_context():
+         #   db.session.commit()
+        flash('Password changed successfully!', 'success')
+        return redirect(url_for('home'))
+
+    return render_template('change_password.html', username=username, role=role)
+
+
 @app.route('/select_tags/<username>', methods=['GET', 'POST'])
 def select_tags(username):
     tags = tag_list()
@@ -298,44 +419,14 @@ def student_profile(username):
     # Tạo danh sách các điều kiện 'or_' cho mỗi thẻ tag đã chọn
     tag_conditions = [Courses.tag.in_(tags)]
     # Truy vấn danh sách video dựa trên các thẻ tag đã chọn
-    videos_by_tags = Courses.query.filter(or_(*tag_conditions)).all()
+    videos_by_tags = Courses.query.filter(or_(*tag_conditions), Courses.playlist_id.is_(None)).all()
     
     teacher_playlists = get_teacher_playlists()
- 
+
     return render_template('user_profile.html', username=username, tags=tags, videos_by_tags=videos_by_tags, teacher_playlists=teacher_playlists)
 
-#@app.route('/view_content/<content_id>')
-#def view_content(content_id):
-    course = Courses.query.get(content_id)
-    if Courses:
-        if Courses.pla == 'playlist':
-            playlist = Playlist.query.get(content.playlist_id)
-            if playlist:
-                return render_template('view_playlist.html', playlist=playlist)
-            else:
-                return "Playlist not found"
-        elif content.content_type == 'video':
-            video = Courses.query.get(content.video_id)
-            if video:
-                return render_template('view_video.html', video_id=course.id)
-            else:
-                return "Video not found"
-        else:
-            return "Invalid content type"
-    else:
-        return "Content not found"
-    
-#@app.route('/playlist/<int:playlist_id>')
-#def playlist_details(playlist_id):
-    playlist = Playlist.query.get(playlist_id)
-    if not playlist:
-        # Handle the case where the playlist doesn't exist
-        return "Playlist not found."
 
-    # Fetch videos associated with the playlist
-    videos = playlist.videos
 
-    return render_template('playlist_details.html', playlist=playlist, videos=videos)    
 
 @app.route('/Teachers/<username>')
 def teacher_profile(username):
@@ -345,7 +436,49 @@ def teacher_profile(username):
 
     courses = Courses.query.filter_by(teacher_id=teacher.id).all()
     courses.reverse()
-    return render_template('teacher_profile.html', teacher=teacher, courses=courses, username=username, )
+    return render_template('teacher_profile.html', teacher=teacher, courses=courses, username=username )
+
+
+@app.route('/Teachers/<username>/edit_video/<int:course_id>', methods=['GET', 'POST'])
+def edit_video(username, course_id):
+    teacher = Teachers.query.filter_by(username=username).first()
+    if not teacher:
+        return "Teacher not found"
+
+    course = Courses.query.get_or_404(course_id)
+    if course.teacher_id != teacher.id:
+        return "You don't have permission to edit this video."
+
+    if request.method == 'POST':
+        course.title = request.form['title']
+        course.tag = request.form['tag']
+        course.description = request.form['description']
+        # Thêm các phần xử lý cho việc chỉnh sửa nội dung video khác (nếu có)
+
+        db.session.commit()
+        return redirect(url_for('teacher_profile', username=username))
+
+    return render_template('edit_video.html', teacher=teacher, course=course, tags=tag_list())
+
+@app.route('/Teachers/<username>/delete_video/<int:course_id>', methods=['GET', 'POST'])
+def delete_video(username, course_id):
+    teacher = Teachers.query.filter_by(username=username).first()
+    if not teacher:
+        return "Teacher not found"
+
+    course = Courses.query.get_or_404(course_id)
+    if course.teacher_id != teacher.id:
+        return "You don't have permission to delete this video."
+
+    if request.method == 'POST':
+        db.session.delete(course)
+        db.session.commit()
+        return redirect(url_for('teacher_profile', username=username))
+
+    return render_template('delete_video.html', teacher=teacher, course=course)
+
+
+
 
 @app.route('/Teachers/<username>/upload_video', methods=['GET', 'POST'])
 def upload_video(username):
@@ -364,7 +497,7 @@ def upload_video(username):
         playlist = request.form.get('playlist')
         
   
-        
+        playlist_id = None
         if not playlist:
             playlist_text = None
         elif playlist == 'new':
@@ -375,7 +508,13 @@ def upload_video(username):
                 db.session.commit()
                 playlist_text = new_playlist.name
         else:
-            playlist_text = playlist
+            #playlist_text = playlist   cũ
+            selected_playlist = Playlist.query.filter_by(name=playlist).first()
+            if not selected_playlist:
+                return "Selected playlist not found"
+
+            playlist_text = selected_playlist.name
+            playlist_id = selected_playlist.id
                 
 
         
@@ -389,14 +528,28 @@ def upload_video(username):
             # Get the relative URL for the video within the /static/uploads/videos/ directory
             video_url = url_for('uploaded_videos', filename=filename, _external=True) 
             print('debug url: ',video_url)
-            new_video = Courses(title=title, 
+            
+            if playlist_id is None:
+                # For 'new' playlist, keep playlist_id as None
+                new_video = Courses(title=title,
                                 description=description,
-                                video_url=video_url, 
-                                tag=tag, 
-                                teacher_id=teacher.id, 
-                                teacher_name=teacher.username, 
-                                playlist=playlist_text
+                                video_url=video_url,
+                                tag=tag,
+                                teacher_id=teacher.id,
+                                teacher_name=teacher.username,
+                                playlist=playlist_text,
+                                playlist_id=None
                                 )
+            else:
+                new_video = Courses(title=title,
+                                description=description,
+                                video_url=video_url,
+                                tag=tag,
+                                teacher_id=teacher.id,
+                                teacher_name=teacher.username,
+                                playlist=playlist_text,
+                                playlist_id=playlist_id
+                                )            
             
             db.session.add(new_video)
             db.session.commit()
@@ -410,4 +563,5 @@ def uploaded_videos(filename):
 
 if __name__ == '__main__':
     create_tables()
-    app.run(debug=True, port=5000)
+    #app.run(debug=True, port=5000)
+    app.run()

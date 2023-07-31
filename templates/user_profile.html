@@ -4,7 +4,8 @@
     <title>Trang cá nhân</title>
 </head>
 <body>
-    <h1>Chào mừng {{ username }} đến với trang cá nhân!</h1>
+    <h1>Chào mừng {{ username }} đến với trang cá nhân!</h1><br>
+    <a href="{{ url_for('change_password', username=username, role='hocvien') }}">Change Password</a><br>
     <a href="{{ url_for('select_tags', username=username) }}">Thay đổi thẻ</a>
     <h2>Các thẻ tag đã chọn:</h2>
     <ul>
@@ -13,47 +14,62 @@
         {% endfor %}
     </ul>
 
-    {% if teacher_playlists %}
-        <h2>Teacher's Playlists:</h2>
-        <ul>
-            {% for playlist in teacher_playlists %}
-                <h3>{{ playlist.name }}</h3>  {# Hiển thị tên của playlist #}
-
-                {% set first_video_url = playlist.playlist_videos[0] if playlist.playlist_videos else None %}  {# Lấy video đầu tiên của playlist, nếu có #}
-                {% if first_video_url %}
-                    <video width="320" height="240" controls>
-                        <source src="{{ first_video_url }}" type="video/mp4">
-                        <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
-                        Your browser does not support the video tag.
-                    </video>
-                {% else %}
-                    <!-- Show a placeholder image if there are no videos in the playlist -->
-                    <img src="{{ url_for('static', filename='placeholder_thumbnail.jpg') }}" alt="Thumbnail Placeholder">
-                {% endif %}
-
-                <p>{{ playlist.num_videos }} videos</p>  {# Hiển thị số lượng video trong playlist #}
-                <p>Tags: {% for tag in playlist.tags %} {{ tag }}, {% endfor %}</p>  {# Hiển thị các tags của playlist #}
-                <a href="{{ url_for('playlist_page', playlist_id=playlist.id) }}">View Playlist</a>  {# Tạo đường dẫn đến trang playlist_page với playlist_id #}
-                <hr>
-
-                <!--ul>
-                    {% for video_url in playlist.playlist_videos %}
-                        <li>
+        {% for tag in tags %}
+        <h3>{{ tag }}</h3>
+        <ul> <!-- thay đổi-->
+            {% if teacher_playlists %}
+                <h2>Teacher's Playlists:</h2>
+                <ul>
+                    {% for playlist in teacher_playlists %}
+                        <h3>{{ playlist.name }}</h3>  {# Hiển thị tên của playlist #}
+    
+                        {% set first_video_url = playlist.playlist_videos[0] if playlist.playlist_videos else None %}  {# Lấy video đầu tiên của playlist, nếu có #}
+                        {% if first_video_url %}
                             <video width="320" height="240" controls>
-                                <source src="{{ video_url }}" type="video/mp4"-->
+                                <source src="{{ first_video_url }}" type="video/mp4">
                                 <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
-                             <!--   Your browser does not support the video tag.
+                                Your browser does not support the video tag.
                             </video>
-                        </li>
+                        {% else %}
+                            <!-- Show a placeholder image if there are no videos in the playlist -->
+                            <img width="320" height="240" src="{{ url_for('static', filename='placeholder_thumbnail.jpg') }}" alt="Thumbnail Placeholder">
+                        {% endif %}
+    
+                        <p>{{ playlist.num_videos }} videos</p>  {# Hiển thị số lượng video trong playlist #}
+                        <p>Tags: {% for tag in playlist.tags %}{{ tag }}{% if not loop.last %}, {% endif %}{% endfor %}</p>  {# Hiển thị các tags của playlist #}
+                        <a href="{{ url_for('playlist_page', playlist_id=playlist.id) }}">View Playlist</a>  {# Tạo đường dẫn đến trang playlist_page với playlist_id #}
+                        <hr>
+    
                     {% endfor %}
-                </ul-->
+                </ul>
+            {% else %}
+                <p>No playlists found for this teacher.</p>
+            {% endif %}            
 
-            {% endfor %}
+            {% if videos_by_tags %}  <!-- dừng thay đổi-->
+                {% for video in videos_by_tags %}
+                    {% if video.tag == tag %}
+                        <li>
+                            <a href="{{ video.video_url }}">{{ video.title }}</a> - {{ video.teacher_id }}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>No videos found for your selected tags.</p>
+            {% endif %}
         </ul>
-    {% else %}
-        <p>No playlists found for this teacher.</p>
-    {% endif %}
+    {% endfor %}    
+
+    
+
+
+
+
+
 </body>
 </html>
+
+
+
 
 
