@@ -12,4 +12,132 @@ tính năng delete video cho giáo viên
 tính năng chỉnh sửa thẻ tag, title, description của video cho giáo viên
 display phần playlist thì được rồi, còn phần xem cái playlist ấy là ok luôn
 
+-1/8/20223-
+CÂY THƯ MỤC:
 
+viewpage.html
+    >login.html
+        nhập để đăng nhập:
+            {
+                Tên đăng nhập hoặc Email;
+                Mật khẩu;
+                Vai trò/ role
+                nút đăng nhập
+            }
+
+        >user_profile.html (role hocsinh)
+            >change_password.html (thay đổi mật khẩu)*
+            >select_tags.html (chọn những thẻ tag mà học sinh muốn)
+            >playlist.html (xem playlist mà học sinh đã ấn xem)
+            @tính năng logout
+
+        >teacher_profile.html (role teacher)
+            >change_password.html (thay đổi mật khẩu)*
+            >upload_video.html (nơi giáo viên đang tải các các video giảng dạy của mình)
+            >delete_video.html (xóa video)
+            >edit_video.html (chỉnh sửa title, tag, description của video đó)
+            @tính năng logout
+        > <a> tôi chưa có tài khoản <a> --> chuyển sang "register.html"
+    >register.html
+        > <a> Trang chủ <a> --> chuyển sang "login.html"
+        Thông tin đăng ký:
+            {
+                Tên đăng nhập;
+                Email;
+                Mật khẩu;
+                Vai trò/ role
+                nút đăng ký
+            }
+        > <a> tôi đã có tài khoản <a> --> chuyển sang "register.html"
+        
+
+
+MÔ TẢ CÁC TÍNH NĂNG:
+
+user_profile.html (role hocsinh)
+    cấu trúc dữ liệu
+        nút change_password
+        nút thay đổi thẻ
+        nút logout
+        các thẻ tag đã chọn
+            <...>
+        lần lượt sẽ chiếu các mục tag:
+        <tag>
+            teacher's playlist:
+                các playlist của các giáo viên
+                <...> 
+                    các thông tin cơ bản của playlist
+                    <video đầu tiên trong playlist để demo hoặc giới thiệu playlist ấy>
+                    <số video trong playlist>
+                    <các tag có trong playlist đó>  -- ban đầu tui tính một playlist chỉ chứ một tag nhưng nếu người dùng nhập nhiều video-có tag khác nhau thì xử lí khá rườm rà nên tui cho nó thành tính năng luôn cho đỡ tốn công :>
+                    <a>xem các video có trong cái playlist ấy<a>
+            Video single (video đơn) là những video không có trong playlist
+                <...>  -- ông muốn lấy cái link video hay cái video thì tùy ông chọn thấy sao cho đẹp là ok :>
+
+
+* change_password.html (thay đổi mật khẩu)
+    có thể thay đổi mật khẩu   -- nếu được ông có thể dùng js để lưu các thông tin cá nhân cho người dùng cũng được
+    có thể ấn nút trở về       --- (gọi tắt là @trang chính)
+
++ select_tags.html (chọn những thẻ tag mà học sinh muốn)
+    có thể thay đổi thẻ đã chọn
+    nếu hs chưa chọn thẻ nó sẽ chuyển đến trang này thì mới được vào user_profile.html (role hocsinh)
+    @trang chính
+
++ playlist.html (xem playlist mà học sinh đã ấn xem)
+    Playlist Name: <tên của playlist>
+    teacher <tên của giáo viên>
+    sẽ lần lượt chiếu các video trong playlist ấy
+        thông tin cơ bản của từng video
+        <title của video>
+        <video>
+        <tag của video>
+        <description của video>
+    @trang chính
+
+
+
+teacher_profile.html (role teacher)
+    nút change_password
+    nút tạo video mới
+    nút logout
+    hiện các video theo thứ tự đăng tải từ mới đến cũng
+        các nội dung trong mỗi video
+        {title video}
+        {video}
+        {tag}
+        {playlist} (nếu có)
+        {description}
+    
+* change_password.html (thay đổi mật khẩu) -- TUI ĐÃ GHI Ở TRÊN :>
+
++ upload_video.html (nơi giáo viên đang tải các các video giảng dạy của mình)
+    nhập các thông tin cho video
+    {
+        Video title;
+        upload video;
+        Description;
+        chọn thẻ Tag;
+        chọn Playlist hoặc không
+        nút upload
+    }
+    @trang chính
+
++ change_password.html (thay đổi mật khẩu)
+    {
+        nhập mật khẩu mới;
+        xác nhận lại
+        nút submit
+    }
+    @trang chính
+
++ delete_video.html (xóa video)
+    nút Delete
+    @trang chính
+
+
++ edit_video.html (chỉnh sửa title, chọn lại thẻ tag, description của video đó)
+    nút save
+    @trang chính
+
+@tính năng logout (trở về trang chủ, trang home)

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Playlist Details</title>
+</head>
+<body>
+    <a href="{{ url_for('student_profile', username=username) }}">Trở về trang chính</a>
+    <h1>Playlist Name: {{ playlist.name }}</h1>
+    <h2>Teacher: {{ teacher.username }}</h2>
+    <ul>
+        {% for video in playlists_show %}
+            <li>
+                <h4>{{ video.title }}</h4>
+                <video width="320" height="240" controls>
+                    <source src="{{ video.playlist_video }}" type="video/mp4">
+                    <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
+                    Your browser does not support the video tag.
+                </video>
+                <p><strong>Tags:</strong> {{ video.tag }}</p>
+                <p><strong>Description:</strong> {{ video.description }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+
+    
+
+</body>
+</html>

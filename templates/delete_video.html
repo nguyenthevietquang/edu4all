@@ -4,6 +4,7 @@
     <title>Delete Video</title>
 </head>
 <body>
+    <a href="{{ url_for('teacher_profile', username=username) }}">Trở về trang chính</a>
     <h1>Delete Video</h1>
     <p>Are you sure you want to delete the video "{{ course.title }}"?</p>
     <form method="post">
