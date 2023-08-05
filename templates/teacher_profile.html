@@ -1,69 +1,275 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Teacher Profile</title>
-    </head>
-    <body>
-        <a href="{{ url_for('upload_video', username=username) }}">Tạo video mới</a><br>
-        <a href="{{ url_for('change_password', username=username, role='giaovien') }}">Change Password</a><br>
-        <button type="button"><a href="{{ url_for('logout') }}"">Logout 1</a></button> 
-        <button type="button"><a href="/logout"">Logout 2</a></button> 
-        <!--ông thích dùng logout nào cũng được nhưng logout 2 sẽ hoạt động nhanh hơn 1-->
-        {% for course in courses %}
-            <h3>{{ course.title }}</h3>
-            <video width="320" height="240" controls>
-                <source src="{{ course.video_url }}" type="video/mp4">
-                <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
-                Your browser does not support the video tag.
-            </video>
-            <div>
-                <p>Tags: {{ course.tag }}</p>
-                {% if course.playlist is none %}
-                    <p>Playlist: Không gắn playlist</p>
-                {% else %}
-                    <p>Playlist: {{ course.playlist }}</p>
-                {% endif %}                
-                
-<!-- có thể khi Playlist là none thì không hiện gì, chỉ cho có playlist thì hiện tên playlist lên thôi cũng đc tùy ông chỉnh thôi :> -->
-
-                <p>decribtion:
-                    {{course.description}}
-                </p>
-            </div>
-            <a href="{{ url_for('edit_video', username=username, course_id=course.id) }}">Edit</a>
-            <br>
-            <a href="{{ url_for('delete_video', username=username, course_id=course.id) }}">Delete</a>
-            <hr>
-            
-        {% endfor %}
-    </body>
-</html>
-
-
-<!--
-<!DOCTYPE html>
-<html>
 <head>
-    <title></title>
+    <title>Teacher Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5; 
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h3 {
+            font-size: 28px;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            color: #008CBA;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+
+        li {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .tag-list {
+            color: #555;
+            font-size: 16px;
+        }
+
+        .upload-btn-container {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-btn,
+        .logout-btn,
+        .change-password-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 20px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+
+        .upload-btn {
+            background-color: #008CBA; 
+        }
+
+        .upload-btn:hover {
+            background-color: #005c7a; 
+        }
+
+        .logout-btn {
+            background-color: #d32f2f; 
+            font-size: 24px;
+        }
+
+        .logout-btn:hover {
+            background-color: #b71c1c; 
+        }
+
+        .change-password-btn {
+            background-color: #4caf50; 
+        }
+
+        .change-password-btn:hover {
+            background-color: #046944;
+        }
+
+        .video-description {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #555;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-description h3 { 
+            color: #000; 
+        }
+
+        .video-description p {
+            margin-bottom: 10px;
+        }
+
+        .tag-list {
+            color: #008CBA;
+            font-size: 16px;
+        }
+
+        .video-description .playlist {
+            font-style: italic;
+        }
+
+        .playlist {
+            display: none;
+        }
+
+        .show-more-link,
+        .show-less-link {
+            color: #013220;
+            font-weight: bold;
+        }
+        
+        .show-more-link:hover,
+        .show-less-link:hover {
+            text-decoration: underline;
+        }
+
+        .description-expanded .tag-list,
+        .description-expanded .playlist {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .action-buttons a {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 10px 20px;
+            background-color: #000; 
+            color: #fff; 
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-buttons a:hover {
+            background-color: #333; 
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
-    <a href="{{ url_for('upload_video', username=username) }}">Tạo video mới</a>
-    {% for course in courses %}
-        <h3>{{ course.title }}</h3>
-        <p>Video URL: {{ course.video_url }}</p>-->
-        <!-- Hiển thị video đã tải lên bằng cách tạo thẻ video HTML -->
-  <!--     <video width="320" height="240" controls>
-            <source src="{{ url_for('upload_video', username=username, filename=course.video_filename) }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <p>Tags: {{ course.tag }}</p>-->
-        <!-- Các thẻ tag sẽ được hiển thị dưới dạng danh sách -->
-        <!--<ul>
-            {% for tag in course.tag.split(',') %}
-                <li>{{ tag }}</li>
-            {% endfor %}
-        </ul>
-    {% endfor %}
+    <header>
+        <h1>Home</h1>
+    </header>
 
+    <div class="container">
+        <div class="upload-btn-container">
+            <a class="upload-btn" href="{{ url_for('upload_video', username=username) }}">Create New Video</a>
+            <a class="change-password-btn" href="{{ url_for('change_password', username=username, role='giaovien') }}">Change Password</a>
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+
+        {% for course in courses %}
+            <div class="video-card">
+                <h3>{{ course.title }}</h3>
+                <video controls>
+                    <source src="{{ course.video_url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="video-description">
+                    <h3>Description</h3>
+                    <div class="description-expanded">
+                        <p class="playlist">Playlist: {% if course.playlist is not none %}{{ course.playlist }}{% else %}Không gắn playlist{% endif %}
+                        <ul class="tag-list">
+                            {% for tag in course.tag.split(',') %}
+                                <li># {{ tag }}</li>
+                            {% endfor %}
+                        </ul>
+                        </p>
+                        <p>{{ course.description }}</p>
+
+                    </div>
+                    <span class="show-more-link">...more</span>
+                </div>
+                <div class="action-buttons">
+                    <a href="{{ url_for('edit_video', username=username, course_id=course.id) }}">Edit</a>
+                    <a href="{{ url_for('delete_video', username=username, course_id=course.id) }}">Delete</a>
+                </div>
+            </div>
+            <hr>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var descriptionContent = document.querySelectorAll('.video-description .description-expanded');
+            var showMoreLinks = document.querySelectorAll('.show-more-link');
+            var isDescriptionExpanded = [];
+
+            descriptionContent.forEach(function(content, index) {
+                content.style.display = "none";
+                isDescriptionExpanded[index] = false;
+            });
+
+            showMoreLinks.forEach(function(link, index) {
+                link.addEventListener("click", function(event) {
+                    event.preventDefault();
+                    if (isDescriptionExpanded[index]) {
+                        descriptionContent[index].style.display = "none";
+                        link.innerText = "...more";
+                    } else {
+                        descriptionContent[index].style.display = "block";
+                        link.innerText = "Show Less";
+                    }
+                    isDescriptionExpanded[index] = !isDescriptionExpanded[index];
+                });
+            });
+        });
+    </script>
 </body>
-</html>--> 
+</html>

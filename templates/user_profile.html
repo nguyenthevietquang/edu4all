@@ -1,85 +1,196 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trang cá nhân</title>
+    <title>User Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333; 
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h2, h3 {
+            color: #000; 
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+
+        hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .upload-btn-container {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        .change-preference-btn,
+        .change-password-btn,
+        .logout-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 20px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+
+        .change-preference-btn {
+            background-color: #008CBA; 
+        }
+
+        .change-preference-btn:hover {
+            background-color: #005c7a; 
+        }
+
+        .change-password-btn {
+            background-color: #4caf50; 
+        }
+
+        .change-password-btn:hover {
+            background-color: #046944; 
+        }
+
+        .logout-btn {
+            background-color: #d32f2f; 
+            font-size: 24px;
+        }
+
+        .logout-btn:hover {
+            background-color: #b71c1c; 
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Chào mừng {{ username }} đến với trang cá nhân!</h1><br>
-    <a href="{{ url_for('change_password', username=username, role='hocvien') }}">Change Password</a><br>
-    <a href="{{ url_for('select_tags', username=username) }}">Thay đổi thẻ</a>
-    <h2>Các thẻ tag đã chọn:</h2>
-    <ul>
-        {% for tag in tags %}
-            <li>{{ tag }}</li>
-        {% endfor %}
-    </ul>
+    <header>
+        <h1>Home</h1>
+    </header>
 
-        {% for tag in tags %}
-        <h3>{{ tag }}</h3>
-        <ul> <!-- thay đổi-->
-            {% if teacher_playlists %}
-                
-                <h2>Teacher's Playlists:</h2>
-                <ul>
-                    {% for playlist in teacher_playlists %}
-                        {% if tag in playlist.tags %}
-                            <!--<p>{{playlist}} </p>-->  {# cái này có thể giúp ông xem được có cái quái gì có trong playlist này#}
-                            <h3>{{ playlist.name }}</h3>  {# Hiển thị tên của playlist #}
-        
-                            {% set first_video_url = playlist.playlist_videos[0] if playlist.playlist_videos else None %}  {# Lấy video đầu tiên của playlist, nếu có #}
-                            {% if first_video_url %}
+    <div class="container">
+        <div class="upload-btn-container">
+            <a class="change-preference-btn" href="{{ url_for('select_tags', username=username) }}">Manage Preferences</a>
+            <a class="change-password-btn" href="{{ url_for('change_password', username=username, role='hocvien') }}">Change Password</a>
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+
+
+            {% for tag in tags %}
+            <ul>
+                {% if teacher_playlists %}
+                    
+                    <h2>Teacher's Playlists:</h2>
+                    <ul>
+                        {% for playlist in teacher_playlists %}
+                            {% if tag in playlist.tags %}
+                                <!--<p>{{playlist}} </p>-->  {# cái này có thể giúp ông xem được có cái quái gì có trong playlist này#}
+                                <h3>{{ playlist.name }}</h3>  {# Hiển thị tên của playlist #}
+            
+                                {% set first_video_url = playlist.playlist_videos[0] if playlist.playlist_videos else None %}  {# Lấy video đầu tiên của playlist, nếu có #}
+                                {% if first_video_url %}
+                                    <video width="320" height="240" controls>
+                                        <source src="{{ first_video_url }}" type="video/mp4">
+                                        <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
+                                        Your browser does not support the video tag.
+                                    </video>
+                                {% else %}
+                                    <img width="320" height="240" src="{{ url_for('static', filename='placeholder_thumbnail.jpg') }}" alt="Thumbnail Placeholder">
+                                {% endif %}
+            
+                                <p>{{ playlist.num_videos }} videos</p>  {# Hiển thị số lượng video trong playlist #}
+                                <p>Teacher: {{playlist.teacher_name}}<p>
+                                <p>Tags: {% for tag in playlist.tags %}{{ tag }}{% if not loop.last %}, {% endif %}{% endfor %}</p>  {# Hiển thị các tags của playlist #}
+                                {# Tạo đường dẫn đến trang playlist_page với playlist_id #}
+                                <a href="{{ url_for('playlist_page', playlist_id=playlist.id, username=username) }}">View Playlist</a> 
+                                
+                                
+                                <hr>
+                            {% endif %}  
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No playlists found for this teacher.</p>
+                {% endif %}            
+
+                {% if videos_by_tags %}
+                    <h2>Videos: </h2>
+                    {% for video in videos_by_tags %}
+                        {% if video.tag == tag %}
+                            <li>
+                                <p>Title: {{ video.title }} - {{ video.teacher_id }} - Teacher: {{video.teacher_name}}</p>
+                                <br>
                                 <video width="320" height="240" controls>
-                                    <source src="{{ first_video_url }}" type="video/mp4">
+                                    <source src="{{ video.video_url }}" type="video/mp4">
                                     <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
                                     Your browser does not support the video tag.
                                 </video>
-                            {% else %}
-                                <!-- Show a placeholder image if there are no videos in the playlist -->
-                                <img width="320" height="240" src="{{ url_for('static', filename='placeholder_thumbnail.jpg') }}" alt="Thumbnail Placeholder">
-                            {% endif %}
-        
-                            <p>{{ playlist.num_videos }} videos</p>  {# Hiển thị số lượng video trong playlist #}
-                            <p>Teacher: {{playlist.teacher_name}}<p>
-                            <p>Tags: {% for tag in playlist.tags %}{{ tag }}{% if not loop.last %}, {% endif %}{% endfor %}</p>  {# Hiển thị các tags của playlist #}
-                            {# Tạo đường dẫn đến trang playlist_page với playlist_id #}
-                            <a href="{{ url_for('playlist_page', playlist_id=playlist.id, username=username) }}">View Playlist</a> 
-                            
-                            
-                            <hr>
-                        {% endif %}  
+                                <br>
+                                <br>
+                            </li>
+                        {% endif %}
                     {% endfor %}
-                </ul>
-            {% else %}
-                <p>No playlists found for this teacher.</p>
-            {% endif %}            
-
-            {% if videos_by_tags %}  <!-- dừng thay đổi-->
-                <h2>Video single</h2>
-                {% for video in videos_by_tags %}
-                    {% if video.tag == tag %}
-                        <li>
-                            <a href="{{ video.video_url }}">Title: {{ video.title }} - {{ video.teacher_id }} - Teacher: {{video.teacher_name}}</a>
-                            <br>
-                            <video width="320" height="240" controls>
-                                <source src="{{ video.video_url }}" type="video/mp4">
-                                <!-- Thông báo nếu trình duyệt không hỗ trợ video -->
-                                Your browser does not support the video tag.
-                            </video>
-                            <br>
-                            <br>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                <p>No videos found for your selected tags.</p>
-            {% endif %}
-        </ul>
-    {% endfor %}    
-
+                {% else %}
+                    <p>No videos found for your selected tags.</p>
+                {% endif %}
+            </ul>
+        {% endfor %}    
+    </div>
 </body>
 </html>
-
-
-
-
-
