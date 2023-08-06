@@ -87,19 +87,16 @@
         <h1>Delete Video</h1>
     </header>
 
-    <!-- Apply the new class to the form -->
     <form id="deleteVideoForm" class="delete-form" method="post">
-        <p>Are you sure you want to delete the video "{{ course.title }}"?</p>
+        <p>Do you want to delete the video "{{ course.title }}"?</p>
         <input type="submit" value="Delete">
     </form>
 
-    <!-- Update the link to use the original class -->
     <a class="back-link" href="{{ url_for('teacher_profile', username=username) }}">Back to home</a>
 
     <script>
         var deleteVideoForm = document.getElementById('deleteVideoForm');
         deleteVideoForm.onsubmit = function () {
-            // You can add confirmation here if needed
         };
     </script>
 </body>

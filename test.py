@@ -473,6 +473,7 @@ def upload_video(username):
                 db.session.add(new_playlist)
                 db.session.commit()
                 playlist_text = new_playlist.name
+                playlist_id = new_playlist.id
         else:
             #playlist_text = playlist   cũ
             selected_playlist = Playlist.query.filter_by(name=playlist).first()
